@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario Productos Minimarket</title>
+    <!-- Incluimos la librería SheetJS para generar archivos Excel reales -->
+    <script src="https://jsdelivr.net"></script>
+    <style>
+        @import url('https://cdnfonts.com');
+        * {
+            font-family: 'Calibri', 'Segoe UI', sans-serif !important;
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .header {
+            border-bottom: 3px solid #2b4463;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header-text h2 {
+            margin: 0;
+            color: #1a446c;
+            font-size: 24px;
+            letter-spacing: 0.5px;
+        }
+        .header-text p {
+            margin: 5px 0 0 0;
+            color: #666;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+            border-radius: 50%;
+            width: 65px;
+            height: 65px;
+            border: 2.5px solid #2b4463;
+            box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .logo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        @media (max-width: 768px) {
+            .main-layout { grid-template-columns: 1fr; }
+        }
+        h3 {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 20px 0 10px 0;
+            color: #2b4463;
+            text-transform: uppercase;
+            border-bottom: 1px solid #cbd2d9;
+            padding-bottom: 5px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .form-group label {
+            width: 130px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #2b4463;
+        }
+        .form-group input, .form-group select {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #cbd2d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+            height: 36px;
+        }
+        .btn-registrar { background-color: #2b4463; color: white; }
+        .btn-mostrar { background-color: #7e8d97; color: white; }
+        .btn-limpiar { background-color: #cbd2d9; color: white; }
+        .btn-vaciar { background-color: #b0a3a2; color: white; }
+        .btn-excel { background-color: #27ae60; color: white; grid-column: span 2; height: 38px; margin-top: 5px; }
+        button:hover { filter: brightness(0.9); }
+        .alert-box {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            padding: 12px;
+            border-radius: 5px;
+            min-height: 50px;
+            font-size: 13px;
+            white-space: pre-line;
+        }
+        .table-container {
+            overflow-x: auto;
+            max-height: 400px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        th {
+            background-color: #2b4463;
+            color: white;
+            padding: 8px 10px;
+            text-align: left;
+            font-weight: bold;
+            border: 1px solid #ddd;
+            position: sticky;
+            top: 0;
+        }
+        td {
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            color: #333;
+        }
+        tr:nth-child(even) { background-color: #f8f9fa; }
+        tr:hover { background-color: #f1f3f5; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div class="header-text">
+            <h2>INVENTARIO PRODUCTOS MINIMARKET</h2>
+            <p>FORMULARIO DE REGISTRO DE INGRESO Y EGRESO CON BASE DE DATOS EN EXCEL.</p>
+        </div>
+        <div class="logo-container">
+            <img src="1.png" alt="Logo Minimarket" onerror="this.style.display='none'; this.parentNode.innerHTML='🏪';">
+        </div>
+    </div>
+
+    <div class="main-layout">
+        <!-- Columna Izquierda: Formulario -->
+        <div>
+            <h3>👤 Responsable</h3>
+            <div class="form-group">
+                <label>Responsable:</label>
+                <input type="text" id="responsable" placeholder="Nombre de quien registra (Ej. Juan Pérez)">
+            </div>
+
+            <h3>📦 Detalles del Producto</h3>
+            <div class="form-group">
+                <label>Nombre:</label>
+                <input type="text" id="nombre" placeholder="Ej. Arroz Grano Largo">
+            </div>
+            <div class="form-group">
+                <label>Categoría:</label>
+                <select id="categoria">
+                    <option value="Abarrotes">Abarrotes</option>
+                    <option value="Lácteos">Lácteos</option>
+                    <option value="Bebidas">Bebidas</option>
+                    <option value="Limpieza">Limpieza</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Marca:</label>
+                <input type="text" id="marca" placeholder="Ej. Marca Ideal">
+            </div>
+            <div class="form-group">
+                <label>Proveedor:</label>
+                <input type="text" id="proveedor" placeholder="Ej. Distribuidora Sur">
+            </div>
+
+            <h3>💰 Precios e Inventario</h3>
+            <div class="form-group">
+                <label>Costo Unit.:</label>
+                <input type="number" id="costo" value="0">
+            </div>
+            <div class="form-group">
+                <label>Cantidad:</label>
+                <input type="number" id="cantidad" value="0">
+            </div>
+            <div class="form-group">
+                <label>Precio Venta:</label>
+                <input type="number" id="precio" value="0">
+            </div>
+            <div class="form-group">
+                <label>Stock Mín:</label>
+                <input type="number" id="stock_min" value="5">
+            </div>
+
+            <div class="btn-group">
+                <button class="btn-registrar" onclick="registrarProducto()">Registrar</button>
+                <button class="btn-mostrar" onclick="actualizarTabla(true)">Mostrar</button>
+                <button class="btn-limpiar" onclick="limpiarCampos()">Limpiar</button>
+                <button class="btn-vaciar" onclick="vaciarInventario()">Vaciar</button>
+                <button class="btn-excel" onclick="descargarExcel()">Descargar Excel</button>
+            </div>
+        </div>
+
+        <!-- Columna Derecha: Reportes y Tablas -->
+        <div>
+            <h3>📋 Estado y Notificaciones</h3>
+            <div id="notificacion" class="alert-box">Listo para ingresar datos.</div>
+
+            <h3>📊 Tabla de Inventario Actual</h3>
+            <div class="table-container">
+                <table id="tablaInventario">
+                    <thead>
+                        <tr>
+                            <th>Fecha y Hora</th>
+                            <th>Responsable</th>
+                            <th>Nombre</th>
+                            <th>Categoría</th>
+                            <th>Marca</th>
+                            <th>Proveedor</th>
+                            <th>Costo Unitario</th>
+                            <th>Cantidad</th>
+                            <th>Precio Venta</th>
+                            <th>Stock Mínimo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpoTabla">
+                        <!-- Los datos se inyectan dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let inventario = JSON.parse(localStorage.getItem('inventario_minimarket')) || [];
+
+    actualizarTabla();
+
+    function registrarProducto() {
+        const responsable = document.getElementById('responsable').value.trim();
+        const nombre = document.getElementById('nombre').value.trim();
+        const categoria = document.getElementById('categoria').value;
+        const marca = document.getElementById('marca').value.trim();
+        const proveedor = document.getElementById('proveedor').value.trim();
+        const costo = parseInt(document.getElementById('costo').value) || 0;
+        const cantidad = parseInt(document.getElementById('cantidad').value) || 0;
+        const precio = parseInt(document.getElementById('precio').value) || 0;
+        const stockMin = parseInt(document.getElementById('stock_min').value) || 0;
+        const notif = document.getElementById('notificacion');
+
+        if (!responsable) {
+            notif.innerHTML = "⚠️ Error: Debe ingresar el nombre del Responsable (Inicio de Sesión).";
